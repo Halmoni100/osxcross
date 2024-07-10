@@ -5,6 +5,10 @@
 # This script requires the OS X SDK and the Clang/LLVM compiler.
 #
 
+CC=clang
+CXX=clang++
+CXXFLAGS=-stdlib=libc++
+
 VERSION=1.5
 
 pushd "${0%/*}" &>/dev/null
@@ -80,7 +84,7 @@ echo "macOS SDK Version: $SDK_VERSION, Target: $TARGET"
 echo "Minimum targeted macOS Version: $OSX_VERSION_MIN"
 echo "Tarball Directory: $TARBALL_DIR"
 echo "Build Directory: $BUILD_DIR"
-echo "Install Directory: $TARGET_DIR"
+echo "Install Directory: ${DESTDIR}${TARGET_DIR}"
 echo "SDK Install Directory: $SDK_DIR"
 if [ -z "$UNATTENDED" ]; then
   echo ""
@@ -88,10 +92,10 @@ if [ -z "$UNATTENDED" ]; then
 fi
 echo ""
 
-export PATH=$TARGET_DIR/bin:$PATH
+export PATH=${DESTDIR}${TARGET_DIR}/bin:$PATH
 
 mkdir -p $BUILD_DIR
-mkdir -p $TARGET_DIR
+mkdir -p ${DESTDIR}${TARGET_DIR}
 mkdir -p $SDK_DIR
 
 source $BASE_DIR/tools/trap_exit.sh
@@ -117,7 +121,7 @@ build_xar
 ## Apple TAPI Library ##
 
 if [ $NEED_TAPI_SUPPORT -eq 1 ]; then
-  get_sources https://github.com/tpoechtrager/apple-libtapi.git 1300.6.5
+  get_sources https://github.com/Halmoni100/apple-libtapi.git chong-$SDK_VERSION
 
   if [ $f_res -eq 1 ]; then
     pushd $CURRENT_BUILD_PROJECT_NAME &>/dev/null
@@ -143,9 +147,9 @@ if [ $f_res -eq 1 ]; then
 
   CONFFLAGS="--prefix=$TARGET_DIR --target=x86_64-apple-$TARGET "
   if [ $NEED_TAPI_SUPPORT -eq 1 ]; then
-    CONFFLAGS+="--with-libtapi=$TARGET_DIR "
+    CONFFLAGS+="--with-libtapi=${DESTDIR}${TARGET_DIR} "
   fi
-  CONFFLAGS+="--with-libxar=$TARGET_DIR "
+  CONFFLAGS+="--with-libxar=${DESTDIR}${TARGET_DIR} "
   [ -n "$DISABLE_CLANG_AS" ] && CONFFLAGS+="--disable-clang-as "
   [ -n "$DISABLE_LTO_SUPPORT" ] && CONFFLAGS+="--disable-lto-support "
   ./configure $CONFFLAGS
@@ -156,7 +160,7 @@ fi
 
 ## Create Arch Symlinks ##
 
-pushd $TARGET_DIR/bin &>/dev/null
+pushd ${DESTDIR}${TARGET_DIR}/bin &>/dev/null
 CCTOOLS=($(find . -name "x86_64-apple-${TARGET}*"))
 function create_arch_symlinks()
 {
@@ -184,7 +188,7 @@ popd &>/dev/null
 
 ## MacPorts ##
 
-pushd $TARGET_DIR/bin &>/dev/null
+pushd ${DESTDIR}${TARGET_DIR}/bin &>/dev/null
 rm -f osxcross-macports
 cp $BASE_DIR/tools/osxcross-macports osxcross-macports
 create_symlink osxcross-macports osxcross-mp
@@ -232,8 +236,8 @@ popd &>/dev/null
 
 build_msg "wrapper"
 
-OSXCROSS_CONF="$TARGET_DIR/bin/osxcross-conf"
-OSXCROSS_ENV="$TARGET_DIR/bin/osxcross-env"
+OSXCROSS_CONF="${DESTDIR}${TARGET_DIR}/bin/osxcross-conf"
+OSXCROSS_ENV="${DESTDIR}${TARGET_DIR}/bin/osxcross-env"
 rm -f $OSXCROSS_CONF $OSXCROSS_ENV
 
 if [ "$PLATFORM" != "Darwin" ]; then
@@ -271,25 +275,25 @@ fi
 
 ## CMake ##
 
-cp -f "$BASE_DIR/tools/toolchain.cmake" "$TARGET_DIR/"
-cp -f "$BASE_DIR/tools/osxcross-cmake" "$TARGET_DIR/bin/"
+cp -f "$BASE_DIR/tools/toolchain.cmake" "${DESTDIR}${TARGET_DIR}/"
+cp -f "$BASE_DIR/tools/osxcross-cmake" "${DESTDIR}${TARGET_DIR}/bin/"
 
-chmod 755 "$TARGET_DIR/bin/osxcross-cmake"
+chmod 755 "${DESTDIR}${TARGET_DIR}/bin/osxcross-cmake"
 
 if [ $I386_SUPPORTED -eq 1 ]; then
-  create_symlink osxcross-cmake "$TARGET_DIR/bin/i386-apple-$TARGET-cmake"
+  create_symlink osxcross-cmake "${DESTDIR}${TARGET_DIR}/bin/i386-apple-$TARGET-cmake"
 fi
 
-create_symlink osxcross-cmake "$TARGET_DIR/bin/x86_64-apple-$TARGET-cmake"
+create_symlink osxcross-cmake "${DESTDIR}${TARGET_DIR}/bin/x86_64-apple-$TARGET-cmake"
 
 if [ $X86_64H_SUPPORTED -eq 1 ]; then
-  create_symlink osxcross-cmake "$TARGET_DIR/bin/x86_64h-apple-$TARGET-cmake"
+  create_symlink osxcross-cmake "${DESTDIR}${TARGET_DIR}/bin/x86_64h-apple-$TARGET-cmake"
 fi
 
 if [ $ARM_SUPPORTED -eq 1 ]; then
-  create_symlink osxcross-cmake "$TARGET_DIR/bin/aarch64-apple-$TARGET-cmake"
-  create_symlink osxcross-cmake "$TARGET_DIR/bin/arm64-apple-$TARGET-cmake"
-  create_symlink osxcross-cmake "$TARGET_DIR/bin/arm64e-apple-$TARGET-cmake"
+  create_symlink osxcross-cmake "${DESTDIR}${TARGET_DIR}/bin/aarch64-apple-$TARGET-cmake"
+  create_symlink osxcross-cmake "${DESTDIR}${TARGET_DIR}/bin/arm64-apple-$TARGET-cmake"
+  create_symlink osxcross-cmake "${DESTDIR}${TARGET_DIR}/bin/arm64e-apple-$TARGET-cmake"
 fi
 
 ## Compiler test ##

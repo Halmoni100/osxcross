@@ -34,7 +34,7 @@ function set_path_vars()
     export TARGET_DIR=${TARGET_DIR:-$BASE_DIR/target}
     export TARGET_DIR_SDK_TOOLS=$TARGET_DIR/SDK/tools
     export PATCH_DIR=$PWD/patches
-    export SDK_DIR=$TARGET_DIR/SDK
+    export SDK_DIR=${DESTDIR}${TARGET_DIR}/SDK
   fi
 }
 
