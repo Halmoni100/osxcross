@@ -150,7 +150,7 @@ fi
 
 function compile_wrapper()
 {
-  mkdir -p ${TARGET_DIR}/bin
+  mkdir -p ${DESTDIR}${TARGET_DIR}/bin
   export PLATFORM
   export CXX
 
@@ -166,9 +166,9 @@ if [ -n "$BWCOMPILEONLY" ]; then
   exit 0
 fi
 
-verbose_cmd mv wrapper "${TARGET_DIR}/bin/${TARGETTRIPLE}-wrapper"
+verbose_cmd mv wrapper "${DESTDIR}${TARGET_DIR}/bin/${TARGETTRIPLE}-wrapper"
 
-pushd "${TARGET_DIR}/bin" &>/dev/null
+pushd "${DESTDIR}${TARGET_DIR}/bin" &>/dev/null
 
 if [ $TARGETCOMPILER = "clang" ]; then
   create_wrapper_link clang 2
